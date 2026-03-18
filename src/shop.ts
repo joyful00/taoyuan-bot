@@ -1,4 +1,5 @@
 import { TaskManager } from "./utils/taskManager";
+import { logger } from "./utils/logger";
 
 // ==========================================
 // 核心算法层：只负责算账，绝对不碰 DOM
@@ -78,7 +79,7 @@ function renderProfitTag(
 // 业务逻辑层：调度算法和视图，选出最优解
 // ==========================================
 function setupSeedProfitAnalyzer() {
-  console.log("🏪 [商店模块] 正在挂载“万物铺算账”雷达...");
+  logger.info("[商店模块] 正在挂载‘万物铺算账’雷达...");
 
   TaskManager.addObserver(
     document.body,
@@ -152,7 +153,7 @@ function setupSeedProfitAnalyzer() {
 // 模块主入口：暴露给 main.ts 路由调用
 // ==========================================
 export default function doShopWork() {
-  console.log("🛒 商店模块已启动，开始分配任务...");
+  logger.info("商店模块已启动，开始分配任务...");
 
   // 启动算账专家
   setupSeedProfitAnalyzer();

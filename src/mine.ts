@@ -1,4 +1,6 @@
 import { TaskManager } from "./utils/taskManager";
+import { logger } from "./utils/logger";
+import { configStore } from "./store/config"; // 👈 引入全局配置中心
 
 let scanInterval: ReturnType<typeof setInterval> | null = null;
 let isMining = false;
@@ -8,7 +10,6 @@ let isMining = false;
 // ==========================================
 function crackPinia(): any[] | null {
   let vueApp: any = null;
-  // 遍历网页找根节点 (使用 as any 绕过 TS 类型检查)
   for (const el of Array.from(document.querySelectorAll("*"))) {
     if ((el as any).__vue_app__) {
       vueApp = (el as any).__vue_app__;
@@ -40,6 +41,9 @@ function crackPinia(): any[] | null {
 // 渲染引擎：给方块强制染色
 // ==========================================
 function renderXRay() {
+  // 🌟 动态开关检查：如果面板里关了透视，立刻停止后续渲染
+  if (!configStore.data.settings.xrayEnabled) return;
+
   const floorGrid = crackPinia();
   if (!floorGrid || floorGrid.length !== 36) return;
 
@@ -52,13 +56,12 @@ function renderXRay() {
   buttons.forEach((btn, index) => {
     const tile = floorGrid[index];
 
-    // 已经点开的，跳过渲染 (防止覆盖游戏自带的样式)
+    // 已经点开的，跳过渲染
     if (tile.revealed) return;
 
     const type = tile.type || "unknown";
 
-    // 🛡️ 核心性能优化：防重复渲染锁！
-    // 如果这个按钮已经被我们打过当前类型的标记了，直接跳过，防止 DOM 频繁重绘导致卡顿
+    // 🛡️ 核心性能优化：防重复渲染锁
     if (btn.dataset.xray === type) return;
     btn.dataset.xray = type;
 
@@ -66,37 +69,40 @@ function renderXRay() {
     switch (type) {
       case "monster":
       case "boss":
-        btn.style.border = "1px solid rgba(239, 68, 68, 0.4)"; // 柔和的红色边框
-        btn.style.backgroundColor = "rgba(239, 68, 68, 0.08)"; // 极淡的红色背景
+        btn.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+        btn.style.backgroundColor = "rgba(239, 68, 68, 0.08)";
         btn.style.color = "rgba(239, 68, 68, 0.8)";
         btn.innerText = "👿";
         break;
       case "trap":
-        btn.style.border = "1px solid rgba(168, 85, 247, 0.4)"; // 柔和的紫色
+        btn.style.border = "1px solid rgba(168, 85, 247, 0.4)";
         btn.style.backgroundColor = "rgba(168, 85, 247, 0.08)";
         btn.innerText = "💣";
         break;
       case "exit":
       case "stairs":
-        btn.style.border = "1px solid rgba(16, 185, 129, 0.5)"; // 柔和的翠绿色
+        btn.style.border = "1px solid rgba(16, 185, 129, 0.5)";
         btn.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
         btn.innerText = "🚪";
         break;
       case "treasure":
       case "item":
       case "ore":
-        btn.style.border = "1px solid rgba(245, 158, 11, 0.4)"; // 柔和的琥珀金
+        btn.style.border = "1px solid rgba(245, 158, 11, 0.4)";
         btn.style.backgroundColor = "rgba(245, 158, 11, 0.1)";
         btn.innerText = "💎";
         break;
       case "empty":
-        btn.style.opacity = "0.15"; // 空地进一步降低透明度，让它几乎融入背景
-        btn.style.border = "1px solid rgba(150, 150, 150, 0.1)";
-        btn.innerText = "空";
+        // 🌟 优化：空的格子什么都不标，保持游戏原样！
+        // 清空可能由于 DOM 复用残留的内联样式和文字
+        btn.style.border = "";
+        btn.style.backgroundColor = "";
+        btn.style.opacity = "";
+        btn.innerText = "";
         break;
       default:
         btn.style.opacity = "0.4";
-        btn.style.fontSize = "10px"; // 遇到未知的英文名，把字号调小一点免得挤出去
+        btn.style.fontSize = "10px";
         btn.innerText = type;
         break;
     }
@@ -107,33 +113,40 @@ function renderXRay() {
 // 模块入口：侦测矿洞面板并控制雷达启停
 // ==========================================
 function setupXRayRadar() {
-  console.log("👁️ [矿洞模块] 上帝之眼雷达已就绪，等待下井...");
+  // 如果玩家全局关了透视，不需要挂载观察者
+  if (!configStore.data.settings.xrayEnabled) return;
+
+  logger.info("👁️ [矿洞模块] 上帝之眼雷达已部署，等待下井...");
 
   TaskManager.addObserver(
     document.body,
     { childList: true, subtree: true },
     () => {
-      // 矿洞特有的 6x6 网格是否存在
       const gridDiv = document.querySelector(".grid.grid-cols-6");
 
-      if (gridDiv && !isMining) {
-        console.log("🔥 进入矿洞层！上帝之眼启动！");
+      // 面板打开，且引擎未运行，且总开关处于开启状态
+      if (gridDiv && !isMining && configStore.data.settings.xrayEnabled) {
+        logger.success("👁️ 进入矿洞层！上帝之眼启动！");
         isMining = true;
         renderXRay(); // 立即渲染一次
 
-        // 开启高频扫描（半秒一次，应对你进入下一层时，DOM 不刷新但数组刷新的情况）
+        // 开启高频扫描
         if (scanInterval) clearInterval(scanInterval);
         scanInterval = setInterval(renderXRay, 500);
-      } else if (!gridDiv && isMining) {
-        console.log("🛑 离开矿洞层，雷达休眠。");
+      }
+      // 离开矿洞，或者中途玩家在控制面板关掉了透视开关
+      else if (
+        (!gridDiv || !configStore.data.settings.xrayEnabled) &&
+        isMining
+      ) {
+        logger.info("🛑 离开矿洞层或已手动关闭雷达，透视休眠。");
         isMining = false;
-        // 及时销毁定时器，保持浏览器极速运行
         if (scanInterval) {
           clearInterval(scanInterval);
           scanInterval = null;
         }
       }
-    }
+    },
   );
 }
 

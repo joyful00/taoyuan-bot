@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 export const TaskManager = {
   timers: [] as number[],
   observers: [] as MutationObserver[],
@@ -27,6 +29,6 @@ export const TaskManager = {
     this.observers.forEach((obs) => obs.disconnect());
     this.observers = [];
 
-    console.log("🧹 [大管家] 已清空当前地图的所有定时器和观察者！");
+    logger.info("🧹 [大管家] 已清空当前地图的所有定时器和观察者！");
   },
 };

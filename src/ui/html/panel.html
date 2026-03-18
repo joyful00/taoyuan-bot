@@ -1,0 +1,87 @@
+<div class="ty-helper-btn">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <rect width="18" height="10" x="3" y="11" rx="2" />
+    <circle cx="12" cy="5" r="2" />
+    <path d="M12 7v4" />
+    <line x1="8" x2="8" y1="16" y2="16" />
+    <line x1="16" x2="16" y1="16" y2="16" />
+  </svg>
+</div>
+
+<div class="ty-helper-panel">
+  <div class="ty-panel-header">
+    <h3>🍑 桃源助手控制台</h3>
+    <button class="ty-panel-close-btn">✖</button>
+  </div>
+
+  <div class="ty-tabs">
+    <button class="ty-tab-btn active" data-target="pane-equip">
+      👔 智能换装
+    </button>
+    <button class="ty-tab-btn" data-target="pane-mine">👁️ 矿洞透视</button>
+    <button class="ty-tab-btn" data-target="pane-fish">🎣 自动钓鱼</button>
+  </div>
+
+  <div class="ty-tab-content">
+    <div id="pane-equip" class="ty-tab-pane active">
+      <div class="ty-config-group">
+        <div class="ty-config-title">🌾 农场专属套装</div>
+        <div class="ty-config-row">
+          <label>帽子</label
+          ><input type="text" value="草帽" placeholder="填入中文装备名" />
+        </div>
+        <div class="ty-config-row">
+          <label>武器</label><input type="text" value="金戟" />
+        </div>
+        <div class="ty-config-row">
+          <label>戒指1</label><input type="text" value="农人青环" />
+        </div>
+        <div class="ty-config-row">
+          <label>戒指2</label><input type="text" value="持久指环" />
+        </div>
+        <div class="ty-config-row">
+          <label>鞋子</label><input type="text" value="疾风靴" />
+        </div>
+      </div>
+
+      <div class="ty-config-group">
+        <div class="ty-config-title">🎣 钓鱼专属套装</div>
+        <div class="ty-config-row">
+          <label>帽子</label><input type="text" value="渔夫帽" />
+        </div>
+        <div class="ty-config-row">
+          <label>武器</label><input type="text" value="竹杖" />
+        </div>
+        <div class="ty-config-row">
+          <label>戒指1</label><input type="text" value="渔翁碧环" />
+        </div>
+        <div class="ty-config-row">
+          <label>戒指2</label><input type="text" value="渔获碧环" />
+        </div>
+        <div class="ty-config-row">
+          <label>鞋子</label><input type="text" value="钓鱼靴" />
+        </div>
+      </div>
+
+      <button class="ty-save-btn">💾 保存并应用配置</button>
+    </div>
+
+    <div id="pane-mine" class="ty-tab-pane">
+      <p>矿洞透视功能配置即将上线...</p>
+    </div>
+
+    <div id="pane-fish" class="ty-tab-pane">
+      <p>自动钓鱼参数设置即将上线...</p>
+    </div>
+  </div>
+</div>

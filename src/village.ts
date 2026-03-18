@@ -1,4 +1,5 @@
 import { TaskManager } from "./utils/taskManager";
+import { logger } from "./utils/logger";
 
 // ==========================================
 // 辅助工具：休眠函数（让代码“睡”一会儿）
@@ -11,7 +12,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 async function startAutoChat(btn: HTMLButtonElement) {
   btn.disabled = true;
   btn.innerText = "🤖 正在自动聊天中...";
-  console.log("🗣️ [村庄模块] 启动全自动聊天循环！");
+  logger.info("[村庄模块] 启动全自动聊天循环！");
 
   let chatCount = 0;
   // 🌟 核心破局点：建一个“已访问黑名单”
@@ -35,15 +36,15 @@ async function startAutoChat(btn: HTMLButtonElement) {
 
     // 没找到，说明全都聊完了，安全下班！
     if (!targetCard) {
-      console.log(
-        `✅ [村庄模块] 聊天完毕！本次共与 ${chatCount} 位村民进行了交谈。`
+      logger.info(
+        `[村庄模块] 聊天完毕！本次共与 ${chatCount} 位村民进行了交谈。`
       );
       break;
     }
 
     const name =
       targetCard.querySelector(".text-xs")?.textContent?.trim() || "未知村民";
-    console.log(`👉 正在和 [${name}] 攀谈...`);
+    logger.info(`正在和 [${name}] 攀谈...`);
 
     // 🌟 把他拉入黑名单，防止下一轮由于游戏动画慢而重复点他
     visitedNames.add(name);
@@ -74,10 +75,10 @@ async function startAutoChat(btn: HTMLButtonElement) {
       if (chatBtn && !chatBtn.disabled) {
         chatBtn.click();
         chatCount++;
-        console.log(`💬 成功与 [${name}] 聊天！`);
+        logger.info(`成功与 [${name}] 聊天！`);
         await sleep(500); // 留足时间给服务器发奖励
       } else {
-        console.log(`⚠️ 面板里没找到 [${name}] 的聊天按钮，已跳过。`);
+        logger.warn(`面板里没找到 [${name}] 的聊天按钮，已跳过。`);
       }
 
       // 5. 关门走人
@@ -88,7 +89,7 @@ async function startAutoChat(btn: HTMLButtonElement) {
         closeBtn.click();
         await sleep(500); // 等待面板关上的动画
       } else {
-        console.log("❌ 找不到关闭按钮，为了安全强行退出循环！");
+        logger.error("找不到关闭按钮，为了安全强行退出循环！");
         break;
       }
     }
@@ -107,7 +108,7 @@ async function startAutoChat(btn: HTMLButtonElement) {
 // 注入逻辑：把按钮放到页面上
 // ==========================================
 function setupVillageAutoChat() {
-  console.log("🏘️ [村庄模块] 正在挂载雷达...");
+  logger.info("[村庄模块] 正在挂载雷达...");
 
   TaskManager.addObserver(
     document.body,
@@ -153,6 +154,6 @@ function setupVillageAutoChat() {
 // 模块主入口
 // ==========================================
 export default function doVillageWork() {
-  console.log("🏃‍♂️ 村庄模块已启动！");
+  logger.info("村庄模块已启动！");
   setupVillageAutoChat();
 }

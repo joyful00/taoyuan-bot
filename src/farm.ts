@@ -2,6 +2,7 @@
 
 // 假设我们引入了之前设计好的大管家
 import { TaskManager } from "./utils/taskManager";
+import { logger } from "./utils/logger";
 
 /**
  * 一键操作面板注入“执行所有”按钮
@@ -79,7 +80,7 @@ function setupAutoOperateAll() {
 // 农场模块的主入口
 // ==========================================
 export default function doFarmWork() {
-  console.log("🚜 进入农村...");
+  logger.info("进入农村...");
 
   // 一键操作面板注入
   setupAutoOperateAll();

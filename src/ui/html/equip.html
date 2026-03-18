@@ -1,0 +1,39 @@
+<div class="ty-config-group" style="background: #f1f5f9; border-color: #cbd5e1">
+  <div class="ty-config-row" style="margin-bottom: 0">
+    <label
+      style="font-weight: bold; color: #1e293b; width: auto; margin-right: 10px"
+      >当前编辑方案</label
+    >
+    <select
+      id="equip-preset-selector"
+      style="font-weight: bold; color: #3b82f6"
+    >
+      <option value="/farm">🌾 农场专属</option>
+      <option value="/fish">🎣 钓鱼专属</option>
+      <option value="/shop">💰 商人专属</option>
+      <option value="/mine">⛏️ 矿工专属</option>
+    </select>
+  </div>
+</div>
+
+<div class="ty-config-group">
+  <div class="ty-config-title" id="equip-form-title">🌾 农场专属 配置</div>
+  <div class="ty-config-row">
+    <label>帽子</label
+    ><input type="text" id="eq-hat" placeholder="留空则不换" />
+  </div>
+  <div class="ty-config-row">
+    <label>武器</label><input type="text" id="eq-weapon" />
+  </div>
+  <div class="ty-config-row">
+    <label>戒指1</label><input type="text" id="eq-ring1" />
+  </div>
+  <div class="ty-config-row">
+    <label>戒指2</label><input type="text" id="eq-ring2" />
+  </div>
+  <div class="ty-config-row">
+    <label>鞋子</label><input type="text" id="eq-shoe" />
+  </div>
+</div>
+
+<button class="ty-save-btn" id="btn-save-equip">💾 保存此方案配置</button>

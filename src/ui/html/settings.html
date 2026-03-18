@@ -1,0 +1,66 @@
+<div class="ty-config-group">
+  <div class="ty-config-group">
+    <div class="ty-config-title">👔 换装引擎</div>
+    <div class="ty-config-row" style="justify-content: flex-start; gap: 10px">
+      <input type="checkbox" id="switch-autoequip" checked />
+      <label for="switch-autoequip" style="width: auto; cursor: pointer"
+        >开启场景智能换装</label
+      >
+    </div>
+  </div>
+  <div class="ty-config-title">👁️ 矿洞辅助</div>
+  <div class="ty-config-row" style="justify-content: flex-start; gap: 10px">
+    <input type="checkbox" id="switch-xray" checked />
+    <label for="switch-xray" style="width: auto; cursor: pointer"
+      >开启全图透视雷达</label
+    >
+  </div>
+</div>
+
+<div class="ty-config-group">
+  <div class="ty-config-title">🎣 钓鱼引擎</div>
+  <div
+    class="ty-config-row"
+    style="justify-content: flex-start; gap: 10px; margin-bottom: 12px"
+  >
+    <input type="checkbox" id="switch-autofish" checked />
+    <label for="switch-autofish" style="width: auto; cursor: pointer"
+      >开启 60FPS 自动钓鱼</label
+    >
+  </div>
+
+  <div class="ty-config-row">
+    <label style="width: 70px">收线力度</label>
+    <input
+      type="range"
+      id="slider-tension"
+      min="1"
+      max="10"
+      value="5"
+      style="flex: 1; cursor: pointer"
+    />
+    <span
+      id="val-tension"
+      style="width: 20px; text-align: right; font-size: 12px; color: #64748b"
+      >5</span
+    >
+  </div>
+  <div class="ty-config-row">
+    <label style="width: 70px">寻的容错</label>
+    <input
+      type="range"
+      id="slider-tolerance"
+      min="1"
+      max="20"
+      value="10"
+      style="flex: 1; cursor: pointer"
+    />
+    <span
+      id="val-tolerance"
+      style="width: 20px; text-align: right; font-size: 12px; color: #64748b"
+      >10</span
+    >
+  </div>
+</div>
+
+<button class="ty-save-btn" id="btn-save-settings">💾 保存全局设置</button>
