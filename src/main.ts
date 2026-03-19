@@ -9,7 +9,7 @@ import { runtimeStore, watchRuntime } from "./store/runtime"; // 引入你手搓
 import { configStore } from "./store/config"; // 引入配置中心
 import { logger } from "./utils/logger";
 import { initPanel } from "./ui/panel";
-
+import { setupAlmanacObserver } from "./almanac";
 // ==========================================
 // 1. 响应式调度中心 (只负责对状态变化做出反应)
 // ==========================================
@@ -95,6 +95,8 @@ function main() {
 
   // 挂载 UI 可视化控制台
   initPanel();
+  // 🌟 启动老黄历观测局
+  setupAlmanacObserver();
 
   // 启动路由拦截引擎
   hijackGameRouter();

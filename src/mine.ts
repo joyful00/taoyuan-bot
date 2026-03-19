@@ -38,11 +38,13 @@ function crackPinia(): any[] | null {
 }
 
 // ==========================================
-// 渲染引擎：给方块强制染色
+// 渲染引擎：给方块强制染色 (文本节点嗅探版)
 // ==========================================
 function renderXRay() {
-  // 🌟 动态开关检查：如果面板里关了透视，立刻停止后续渲染
-  if (!configStore.data.settings.xrayEnabled) return;
+  if (!configStore.data.settings.xrayEnabled) {
+    document.querySelectorAll(".ty-xray-marker").forEach((el) => el.remove());
+    return;
+  }
 
   const floorGrid = crackPinia();
   if (!floorGrid || floorGrid.length !== 36) return;
@@ -56,14 +58,64 @@ function renderXRay() {
   buttons.forEach((btn, index) => {
     const tile = floorGrid[index];
 
-    // 已经点开的，跳过渲染
-    if (tile.revealed) return;
+    // 🌟 终极防伪嗅探：提取原版游戏渲染的【纯文本】
+    // 我们过滤掉我们自己加的 span 图层，只看按钮本身的字
+    let rawText = "";
+    btn.childNodes.forEach((node) => {
+      // Node.TEXT_NODE (值为 3) 代表纯文本节点
+      if (node.nodeType === 3) {
+        rawText += node.nodeValue?.trim() || "";
+      }
+    });
+
+    // 🌟 多维联合判定：只要字不是 "?"，或者底层有死亡标记，统统判定为【已处理】！
+    const isRevealed =
+      tile.revealed ||
+      tile.cleared ||
+      tile.isDead ||
+      tile.defeated ||
+      (tile.hp !== undefined && tile.hp <= 0) ||
+      (rawText !== "" && rawText !== "?"); // 👈 破局核心：游戏把它变成了 '·' 或 '×'
+
+    let marker = btn.querySelector(".ty-xray-marker") as HTMLElement;
+
+    // 如果格子被点开了，强制执行大扫除
+    if (isRevealed) {
+      if (marker) marker.remove();
+      // 必须清空内联样式，消除残留的彩色边框和背景
+      if (btn.dataset.xray) {
+        btn.style.border = "";
+        btn.style.backgroundColor = "";
+        delete btn.dataset.xray;
+      }
+      return;
+    }
 
     const type = tile.type || "unknown";
 
-    // 🛡️ 核心性能优化：防重复渲染锁
-    if (btn.dataset.xray === type) return;
+    if (btn.dataset.xray === type && marker) return;
     btn.dataset.xray = type;
+    btn.style.position = "relative";
+
+    if (!marker) {
+      marker = document.createElement("span");
+      marker.className = "ty-xray-marker";
+      marker.style.cssText = `
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: 16px;
+      `;
+      btn.appendChild(marker);
+    }
 
     // 开始染色
     switch (type) {
@@ -71,39 +123,43 @@ function renderXRay() {
       case "boss":
         btn.style.border = "1px solid rgba(239, 68, 68, 0.4)";
         btn.style.backgroundColor = "rgba(239, 68, 68, 0.08)";
-        btn.style.color = "rgba(239, 68, 68, 0.8)";
-        btn.innerText = "👿";
+        marker.style.color = "rgba(239, 68, 68, 0.8)";
+        marker.innerText = "👿";
         break;
       case "trap":
         btn.style.border = "1px solid rgba(168, 85, 247, 0.4)";
         btn.style.backgroundColor = "rgba(168, 85, 247, 0.08)";
-        btn.innerText = "💣";
+        marker.innerText = "💣";
         break;
       case "exit":
       case "stairs":
         btn.style.border = "1px solid rgba(16, 185, 129, 0.5)";
         btn.style.backgroundColor = "rgba(16, 185, 129, 0.1)";
-        btn.innerText = "🚪";
+        marker.innerText = "🚪";
+        break;
+      case "mushroom":
+        btn.style.border = "1px solid rgba(217, 70, 239, 0.4)"; // 骚气的粉紫色边框
+        btn.style.backgroundColor = "rgba(217, 70, 239, 0.1)";
+        marker.innerText = "🍄";
         break;
       case "treasure":
       case "item":
       case "ore":
         btn.style.border = "1px solid rgba(245, 158, 11, 0.4)";
         btn.style.backgroundColor = "rgba(245, 158, 11, 0.1)";
-        btn.innerText = "💎";
+        marker.innerText = "💎";
         break;
       case "empty":
-        // 🌟 优化：空的格子什么都不标，保持游戏原样！
-        // 清空可能由于 DOM 复用残留的内联样式和文字
         btn.style.border = "";
         btn.style.backgroundColor = "";
-        btn.style.opacity = "";
-        btn.innerText = "";
+        marker.innerText = "";
         break;
       default:
-        btn.style.opacity = "0.4";
-        btn.style.fontSize = "10px";
-        btn.innerText = type;
+        btn.style.border = "";
+        btn.style.backgroundColor = "";
+        marker.style.opacity = "0.4";
+        marker.style.fontSize = "10px";
+        marker.innerText = type;
         break;
     }
   });

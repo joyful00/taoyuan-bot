@@ -29,7 +29,7 @@ const defaultConfig = {
       ring2: "古玉指环",
       shoe: "商旅靴",
     },
-    "/mine": {
+    "/mining": {
       name: "⛏️ 矿工专属",
       hat: "矿工帽",
       weapon: "战锤",
