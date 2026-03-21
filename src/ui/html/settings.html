@@ -1,65 +1,57 @@
 <div class="ty-config-group">
-  <div class="ty-config-group">
-    <div class="ty-config-title">👔 换装引擎</div>
-    <div class="ty-config-row" style="justify-content: flex-start; gap: 10px">
-      <input type="checkbox" id="switch-autoequip" checked />
-      <label for="switch-autoequip" style="width: auto; cursor: pointer"
-        >开启场景智能换装</label
-      >
-    </div>
+  <div class="ty-config-title">⏰ 时间管理</div>
+  <div class="ty-config-row ty-checkbox-row">
+    <input type="checkbox" id="switch-autopause" />
+    <label for="switch-autopause">开启自动暂停 (操作完即停)</label>
   </div>
-  <div class="ty-config-title">👁️ 矿洞辅助</div>
-  <div class="ty-config-row" style="justify-content: flex-start; gap: 10px">
+</div>
+<div class="ty-config-group">
+  <div class="ty-config-title">👔 换装引擎</div>
+  <div class="ty-config-row ty-checkbox-row">
+    <input type="checkbox" id="switch-autoequip" checked />
+    <label for="switch-autoequip">开启场景智能换装</label>
+  </div>
+
+  <div class="ty-config-title" style="margin-top: 12px">👁️ 矿洞辅助</div>
+  <div class="ty-config-row ty-checkbox-row">
     <input type="checkbox" id="switch-xray" checked />
-    <label for="switch-xray" style="width: auto; cursor: pointer"
-      >开启全图透视雷达</label
-    >
+    <label for="switch-xray">开启全图透视雷达</label>
   </div>
 </div>
 
 <div class="ty-config-group">
   <div class="ty-config-title">🎣 钓鱼引擎</div>
-  <div
-    class="ty-config-row"
-    style="justify-content: flex-start; gap: 10px; margin-bottom: 12px"
-  >
+  <div class="ty-config-row ty-checkbox-row" style="margin-bottom: 12px">
     <input type="checkbox" id="switch-autofish" checked />
-    <label for="switch-autofish" style="width: auto; cursor: pointer"
-      >开启 60FPS 自动钓鱼</label
-    >
+    <label for="switch-autofish">开启 60FPS 自动钓鱼</label>
   </div>
 
   <div class="ty-config-row">
-    <label style="width: 70px">收线力度</label>
+    <label>收线力度</label>
     <input
       type="range"
       id="slider-tension"
       min="1"
       max="10"
       value="5"
-      style="flex: 1; cursor: pointer"
+      class="ty-slider"
     />
-    <span
-      id="val-tension"
-      style="width: 20px; text-align: right; font-size: 12px; color: #64748b"
-      >5</span
-    >
+    <span id="val-tension" class="ty-val-display">5</span>
   </div>
-  <div class="ty-config-row">
-    <label style="width: 70px">寻的容错</label>
+  <div
+    class="ty-config-row"
+    title="滑块与目标之间的允许误差距离，值越大越不容易脱钩，但可能导致过度抖动"
+  >
+    <label>判定容错</label>
     <input
       type="range"
       id="slider-tolerance"
       min="1"
       max="20"
       value="10"
-      style="flex: 1; cursor: pointer"
+      class="ty-slider"
     />
-    <span
-      id="val-tolerance"
-      style="width: 20px; text-align: right; font-size: 12px; color: #64748b"
-      >10</span
-    >
+    <span id="val-tolerance" class="ty-val-display">10</span>
   </div>
 </div>
 

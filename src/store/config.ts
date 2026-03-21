@@ -2,66 +2,70 @@
 
 const STORAGE_KEY = "taoyuan_helper_config";
 
+// 🌟 1. 明确定义套装的数据结构，治愈 TS 的类型推导强迫症
+export interface EquipPreset {
+  id: string;
+  name: string;
+  hat: string;
+  weapon: string;
+  ring1: string;
+  ring2: string;
+  shoe: string;
+}
+
 // 默认出厂设置
 const defaultConfig = {
-  equipPresets: {
-    "/farm": {
-      name: "🌾 农场专属",
+  // 🌟 2. 告诉 TS：这是一个字典，Key 是普通字符串，Value 是 EquipPreset
+  presets: {
+    preset_1: {
+      id: "preset_1",
+      name: "🌾 默认农场套",
       hat: "草帽",
       weapon: "金戟",
       ring1: "农人青环",
       ring2: "持久指环",
       shoe: "疾风靴",
     },
-    "/fish": {
-      name: "🎣 钓鱼专属",
+    preset_2: {
+      id: "preset_2",
+      name: "🎣 默认钓鱼套",
       hat: "渔夫帽",
       weapon: "竹杖",
       ring1: "渔翁碧环",
       ring2: "渔获碧环",
       shoe: "钓鱼靴",
     },
-    "/shop": {
-      name: "💰 商人专属",
-      hat: "商人帽",
-      weapon: "金扇",
-      ring1: "商贾金环",
-      ring2: "古玉指环",
-      shoe: "商旅靴",
-    },
-    "/mining": {
-      name: "⛏️ 矿工专属",
-      hat: "矿工帽",
-      weapon: "战锤",
-      ring1: "矿工金环",
-      ring2: "翠玉护身环",
-      shoe: "矿工靴",
-    },
-  },
+  } as Record<string, EquipPreset>, // 👈 关键就是这行 as 声明！
+
+  // 场景映射表
+  sceneMappings: {
+    "/game/farm": "preset_1",
+    "/game/fishing": "preset_2",
+  } as Record<string, string>,
+
   settings: {
-    autoEquipEnabled: true, //自动换装总开关
-    xrayEnabled: true, // 矿洞透视
-    autoFishEnabled: true, // 自动钓鱼
-    fishTension: 5, // 收线力度
-    fishTolerance: 10, // 寻的容错
+    autoEquipEnabled: true,
+    xrayEnabled: true,
+    autoFishEnabled: true,
+    autoPauseEnabled: false,
+    fishTension: 5,
+    fishTolerance: 10,
   },
 };
 
-// 极简状态管理器 (单例)
 export const configStore = {
   data: { ...defaultConfig },
 
-  // 从浏览器本地读取数据
   load() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // 深度合并：保留用户设置，若有新加的默认字段也能补充进去
         this.data = {
-          equipPresets: {
-            ...defaultConfig.equipPresets,
-            ...parsed.equipPresets,
+          presets: parsed.presets || defaultConfig.presets,
+          sceneMappings: {
+            ...defaultConfig.sceneMappings,
+            ...parsed.sceneMappings,
           },
           settings: { ...defaultConfig.settings, ...parsed.settings },
         };
@@ -71,11 +75,9 @@ export const configStore = {
     }
   },
 
-  // 存入浏览器本地
   save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
   },
 };
 
-// 脚本一启动就加载数据
 configStore.load();

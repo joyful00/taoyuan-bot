@@ -1,7 +1,6 @@
 // src/modules/almanac.ts
 import { logger } from "./utils/logger";
 
-// 定义黄历词条的结构
 interface AlmanacItem {
   text: string;
   weight: number;
@@ -80,40 +79,39 @@ function calculateAlmanac(season: string, weather: string) {
   return { yi, ji };
 }
 
-// 🖌️ 渲染引擎：返璞归真防弹版
+// 🖌️ 渲染引擎：悬浮幽灵版 (对 Vue 绝对安全)
 function renderAlmanacUI() {
   try {
-    // 1. 寻找屏幕上的标题栏。
-    // 🌟 致命修复：为了对抗节日全屏动画造成的 Vue KeepAlive 节点残留，我们取【DOM树里最后面（最新）】的可见标题！
-    const titleSpans = Array.from(
-      document.querySelectorAll("span.text-accent.font-bold"),
-    ).filter(
-      (span) =>
+    const titleSpans = document.querySelectorAll("span.text-accent.font-bold");
+    let activeTitleSpan = null;
+    for (const span of Array.from(titleSpans)) {
+      if (
         span.textContent?.includes("桃源乡") &&
-        span.getBoundingClientRect().width > 0,
-    );
+        span.getBoundingClientRect().width > 0
+      ) {
+        activeTitleSpan = span;
+        break;
+      }
+    }
 
-    // 如果在黑屏或者节日动画遮挡中，安静等待，不要报错
-    if (titleSpans.length === 0) return;
+    let container = document.getElementById("ty-almanac-container");
 
-    // 取最后一个（最上层的现役节点）
-    const activeTitleSpan = titleSpans[titleSpans.length - 1];
+    // 找不到标题，说明在黑屏过场，先把黄历隐藏起来保护视力
+    if (!activeTitleSpan || !activeTitleSpan.parentElement) {
+      if (container) container.style.display = "none";
+      return;
+    }
+
     const topBar = activeTitleSpan.parentElement;
-    if (!topBar) return;
 
-    // 2. 绝对严谨的数据提取
     let season = "";
     let weather = "";
+    let weatherSpan: Element | null = null;
 
-    // 只遍历它的一级亲儿子
+    // 提取时空数据并锁定【天气】标签的物理位置
     for (const child of Array.from(topBar.children)) {
-      // 🌟 避开咱们自己的黄历容器，绝不“我读我自己”
-      if (child.id === "ty-almanac-container") continue;
-
       const text = child.textContent?.trim() || "";
-      if (!text) continue;
 
-      // 提取季节
       if (
         (text.includes("春") ||
           text.includes("夏") ||
@@ -124,99 +122,100 @@ function renderAlmanacUI() {
         season = text;
       }
 
-      // 提取天气（字数很少，且命中词库）
       if (
         ["晴", "雨", "雷", "雪", "风", "绿"].some((w) => text.includes(w)) &&
-        text.length <= 5
+        text.length <= 4
       ) {
         weather = text;
+        weatherSpan = child; // 锁定它！
       }
     }
 
-    // 如果节日当天 UI 发生异变（没文字了），直接退出等第二天
-    if (!season || !weather) return;
+    if (!season || !weather || !weatherSpan) {
+      if (container) container.style.display = "none";
+      return;
+    }
 
-    // 3. 容器强制清理
-    // 扫荡全局，把节日过场动画可能产生的“幽灵黄历”全部超度
-    document.querySelectorAll("#ty-almanac-container").forEach((el) => {
-      if (el.parentElement !== topBar) el.remove();
-    });
-
-    let container = topBar.querySelector(
-      "#ty-almanac-container",
-    ) as HTMLElement;
+    // 🌟 核心破局：把容器挂在 body 上，而不是原版游戏的盒子里！
     if (!container) {
-      container = document.createElement("span");
+      container = document.createElement("div");
       container.id = "ty-almanac-container";
       container.style.cssText = `
-        margin-left: 10px;
+        position: fixed; /* 绝对悬浮，无视页面滚动 */
+        pointer-events: none; /* 绝对不能阻挡玩家鼠标点击 */
         display: inline-flex;
         gap: 6px;
         font-size: 0.75rem;
         font-weight: 700;
         user-select: none;
+        z-index: 9999; /* 保证不被其他东西挡住 */
+        transition: opacity 0.2s; /* 切换时更平滑 */
       `;
-      topBar.appendChild(container);
+      document.body.appendChild(container); // 丢进全局
     }
 
-    // 4. 数据比对：时空没变就不刷新
+    // 🌟 动态追踪：获取天气标签在屏幕上的真实坐标，让黄历一直“贴”在它右边
+    const rect = weatherSpan.getBoundingClientRect();
+    if (rect.width > 0) {
+      container.style.display = "inline-flex";
+      container.style.left = `${rect.right + window.scrollX + 24}px`; // 紧贴右侧 10px，加上滚动偏移
+      container.style.top = `${rect.top + window.scrollY + rect.height / 2}px`; // 加上滚动偏移
+      container.style.transform = `translateY(-50%)`; // 完美垂直居中
+    } else {
+      container.style.display = "none";
+    }
+
+    // 只有在节气变化时才重新渲染内部 HTML
     const currentKey = `${season}-${weather}`;
     if (container.dataset.key === currentKey && container.innerHTML !== "")
       return;
 
-    // 5. 生成并注入 HTML
+    container.dataset.key = currentKey;
+
     const { yi, ji } = calculateAlmanac(season, weather);
     let html = "";
 
     if (yi.length > 0) {
-      html += `<span style="background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 4px;">
+      html += `<span style="background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 4px; backdrop-filter: blur(2px);">
           <span style="color: #10b981; border-right: 1px solid rgba(16,185,129,0.3); padding-right: 4px;">宜</span>
           <span style="display: inline-flex; gap: 6px;">`;
-      yi.forEach((item) => {
-        html += `<span style="color: ${item.color}; text-shadow: 0 0 2px rgba(0,0,0,0.1);">${item.text}</span>`;
-      });
+      yi.forEach(
+        (item) =>
+          (html += `<span style="color: ${item.color}; text-shadow: 0 0 2px rgba(0,0,0,0.1);">${item.text}</span>`),
+      );
       html += `</span></span>`;
     }
 
     if (ji.length > 0) {
-      html += `<span style="background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; gap: 4px;">
+      html += `<span style="background: rgba(239, 68, 68, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; gap: 4px; backdrop-filter: blur(2px);">
           <span style="color: #ef4444; border-right: 1px solid rgba(239,68,68,0.3); padding-right: 4px;">忌</span>
           <span style="display: inline-flex; gap: 6px;">`;
-      ji.forEach((item) => {
-        html += `<span style="color: ${item.color}; text-shadow: 0 0 2px rgba(0,0,0,0.1);">${item.text}</span>`;
-      });
+      ji.forEach(
+        (item) =>
+          (html += `<span style="color: ${item.color}; text-shadow: 0 0 2px rgba(0,0,0,0.1);">${item.text}</span>`),
+      );
       html += `</span></span>`;
     }
 
     container.innerHTML = html;
-    container.dataset.key = currentKey;
-    logger.success(
-      `📅 [天象雷达] 从深渊归来，捕获时空: ${season} | ${weather}`,
-    );
   } catch (e) {
-    console.error("[桃源助手] 黄历渲染时发生内部错误:", e);
+    console.error("[桃源助手] 黄历渲染错误:", e);
   }
 }
 
-// 📡 暴露给主入口
+// 📡 rAF 永动机内核
 export function setupAlmanacObserver() {
-  logger.info("启动黄历观测局 (已切换为 rAF 永动机内核)...");
+  logger.info("启动黄历观测局 (已开启绝对物理隔离模式)...");
 
   let lastTime = 0;
-
-  // 创造一个递归的渲染帧循环
   function almanacLoop(timestamp: number) {
-    // 1. 第一时间把自己挂载到下一帧，保证引擎【绝对不可能】停转
     requestAnimationFrame(almanacLoop);
 
-    // 2. 节流防抖：让它每隔 1000 毫秒（1秒）才真正干一次活，不浪费一点点 CPU 性能
-    if (timestamp - lastTime < 1000) return;
+    // 我们把频率稍微提高一点到 500ms，这样黄历追踪目标位置时会更跟手
+    if (timestamp - lastTime < 500) return;
     lastTime = timestamp;
 
-    // 3. 执行咱们的黄历刷新逻辑
     renderAlmanacUI();
   }
-
-  // 启动永动机！
   requestAnimationFrame(almanacLoop);
 }

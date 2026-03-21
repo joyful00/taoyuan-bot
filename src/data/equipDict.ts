@@ -130,3 +130,6 @@ export const EQUIP_DICT: Record<string, string> = {
   古神剑: "ancient_blade",
   公会战刃: "guild_war_blade",
 };
+export const REVERSE_EQUIP_DICT: Record<string, string> = Object.fromEntries(
+  Object.entries(EQUIP_DICT).map(([k, v]) => [v, k]),
+);

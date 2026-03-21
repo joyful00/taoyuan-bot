@@ -1,13 +1,26 @@
-// ==========================================
-// 桃源乡 - 无限虚拟衣柜引擎
-// ==========================================
-import { EQUIP_DICT } from "./data/equipDict";
+// src/autoEquip.ts
+import { EQUIP_DICT, REVERSE_EQUIP_DICT } from "./data/equipDict";
 import { logger } from "./utils/logger";
-import { configStore } from "./store/config"; // 👈 引入最新的持久化配置中心
+import { configStore } from "./store/config";
 
-// 💡 智能转码：优先查字典，查不到就原样返回
+// 🌟 全场景列表配置
+export const SCENE_LIST = [
+  { name: "农场", path: "/game/farm" },
+  { name: "畜牧", path: "/game/animal" },
+  { name: "家园", path: "/game/home" },
+  { name: "小屋", path: "/game/cottage" },
+  { name: "村庄", path: "/game/village" },
+  { name: "商店", path: "/game/shop" },
+  { name: "采集", path: "/game/forage" },
+  { name: "钓鱼", path: "/game/fishing" },
+  { name: "挖矿", path: "/game/mining" },
+  { name: "烹饪", path: "/game/cooking" },
+  { name: "育种", path: "/game/breeding" },
+  { name: "翰海", path: "/game/hanhai" },
+  { name: "鱼塘", path: "/game/fishpond" },
+];
+
 const getDefId = (name: string) => EQUIP_DICT[name] || name;
-
 let currentEquippedPath: string | null = null;
 
 // ==========================================
@@ -39,134 +52,190 @@ function showToast(message: string) {
   }, 2000);
 }
 
-// 🔑 骇入背包数据库
+// 🔑 骇入背包数据库 (究极防弹版)
 function getInventoryStore(): any {
   let vueApp: any = null;
-  for (const el of Array.from(document.querySelectorAll("*"))) {
-    if ((el as any).__vue_app__) {
-      vueApp = (el as any).__vue_app__;
+
+  // 1. 极速通道：优先查常用根节点 (瞬间完成，不卡顿)
+  const roots = [
+    document.querySelector("#app"),
+    document.querySelector(".app-wrapper"),
+    document.body,
+  ];
+  for (const root of roots) {
+    if (root && (root as any).__vue_app__) {
+      vueApp = (root as any).__vue_app__;
       break;
     }
   }
+
+  // 2. 兜底通道：如果根节点没有，开启 DOM 地毯式全图扫描
+  if (!vueApp) {
+    const allElements = document.querySelectorAll("*");
+    for (let i = 0; i < allElements.length; i++) {
+      if ((allElements[i] as any).__vue_app__) {
+        vueApp = (allElements[i] as any).__vue_app__;
+        break;
+      }
+    }
+  }
+
   if (!vueApp) return null;
 
   const provides = vueApp._context?.provides;
   if (!provides) return null;
 
   let pinia: any = null;
-  for (const sym of Object.getOwnPropertySymbols(provides)) {
-    if (provides[sym]?._s instanceof Map) {
-      pinia = provides[sym];
+  // 🌟 核心修复：完全采用控制台验证成功的提取逻辑，兼容所有 Symbol
+  const symbols = Object.getOwnPropertySymbols(provides);
+  for (const sym of symbols) {
+    const instance = provides[sym];
+    if (instance && instance._s && instance._s instanceof Map) {
+      pinia = instance;
       break;
     }
   }
-  return pinia ? pinia._s.get("inventory") : null;
+
+  if (!pinia) return null;
+
+  const store = pinia._s.get("inventory");
+
+  // 🌟 双重保险：兼容 Pinia 的 Setup Store 模式，防止属性被隐藏在 $state 里
+  if (store) {
+    return store;
+  }
+
+  return null;
 }
 
-// ==========================================
-// 散件极速穿戴引擎 (暴露给 main.ts)
-// ==========================================
+// 🌟 核心新增：提取玩家真实拥有的装备，供 UI 渲染下拉框！
+export function getOwnedEquipment() {
+  const store = getInventoryStore();
+  // 如果背包没加载，绝对不要报错，悄悄返回 null 即可
+  if (!store) return null;
+
+  const mapToNames = (items: any[]) =>
+    items.map((i) => REVERSE_EQUIP_DICT[i.defId] || i.defId);
+
+  return {
+    hats: mapToNames(store.ownedHats || []),
+    weapons: mapToNames(store.ownedWeapons || []),
+    shoes: mapToNames(store.ownedShoes || []),
+    rings: mapToNames(store.ownedRings || []),
+  };
+}
+
+// 🌟 终极强化的换装逻辑
 export function autoEquipByVirtualWardrobe(currentPath: string) {
-  let targetConfig = null;
-  let targetPath = null;
+  if (!configStore.data.settings.autoEquipEnabled) return;
 
-  // 1. 匹配路由 (🚨 关键修改：直接读取本地实时保存的配置)
-  for (const [pathKey, config] of Object.entries(
-    configStore.data.equipPresets,
-  )) {
-    if (currentPath.includes(pathKey)) {
-      targetConfig = config;
-      targetPath = pathKey;
-      break;
-    }
-  }
+  const scene = SCENE_LIST.find((s) => currentPath.includes(s.path));
+  if (!scene) return;
 
-  // 没匹配到配置，或当前已经穿了这套，直接退出
-  if (!targetConfig || currentEquippedPath === targetPath) return;
+  const presetId = configStore.data.sceneMappings[scene.path];
+  if (!presetId) return;
+
+  const targetConfig = configStore.data.presets[presetId];
+  if (!targetConfig) return;
+
+  if (currentEquippedPath === scene.path) return;
 
   const store = getInventoryStore();
   if (!store) {
-    logger.error("无法读取背包数据库！");
+    logger.warn("🎒 背包模块休眠中，跳过本次换装。(建议进游戏先开一次背包)");
     return;
   }
 
-  // 2. 依次寻址穿戴
-  logger.info(`开始为地图 [${targetPath}] 换上 [${targetConfig.name}]！`);
+  // 🌟 加入护盾：万一底层函数名变了，也能在控制台抓到，不会导致整个外挂死机
+  try {
+    logger.info(`开始为 [${scene.name}] 换上套装 [${targetConfig.name}]！`);
 
-  if (targetConfig.hat) {
-    logger.info("开始穿戴帽子!");
-    const trueId = getDefId(targetConfig.hat);
-    logger.info(`目标帽子ID: ${trueId}`);
-
-    const idx = store.ownedHats.findIndex((h: any) => h.defId === trueId);
-    if (idx !== -1 && store.equippedHatIndex !== idx) {
-      store.equipHat(idx);
-      logger.info(`成功穿戴帽子: ${targetConfig.hat}`);
-    } else {
-      logger.warn(`帽子 ${targetConfig.hat} 未找到或已装备`);
+    if (targetConfig.hat) {
+      const trueId = getDefId(targetConfig.hat);
+      const idx = store.ownedHats.findIndex((h: any) => h.defId === trueId);
+      if (idx !== -1 && store.equippedHatIndex !== idx) store.equipHat(idx);
     }
-  }
 
-  if (targetConfig.weapon) {
-    logger.info("开始穿戴武器!");
-    const trueId = getDefId(targetConfig.weapon);
-    logger.info(`目标武器ID: ${trueId}`);
-
-    const idx = store.ownedWeapons.findIndex((w: any) => w.defId === trueId);
-    if (idx !== -1 && store.equippedWeaponIndex !== idx) {
-      store.equipWeapon(idx);
-      logger.info(`成功穿戴武器: ${targetConfig.weapon}`);
-    } else {
-      logger.warn(`武器 ${targetConfig.weapon} 未找到或已装备`);
+    if (targetConfig.weapon) {
+      const trueId = getDefId(targetConfig.weapon);
+      const idx = store.ownedWeapons.findIndex((w: any) => w.defId === trueId);
+      if (idx !== -1 && store.equippedWeaponIndex !== idx)
+        store.equipWeapon(idx);
     }
-  }
 
-  if (targetConfig.shoe) {
-    logger.info("开始穿戴鞋子!");
-    const trueId = getDefId(targetConfig.shoe);
-    logger.info(`目标鞋子ID: ${trueId}`);
-
-    const idx = store.ownedShoes.findIndex((s: any) => s.defId === trueId);
-    if (idx !== -1 && store.equippedShoeIndex !== idx) {
-      store.equipShoe(idx);
-      logger.info(`成功穿戴鞋子: ${targetConfig.shoe}`);
-    } else {
-      logger.warn(`鞋子 ${targetConfig.shoe} 未找到或已装备`);
+    if (targetConfig.shoe) {
+      const trueId = getDefId(targetConfig.shoe);
+      const idx = store.ownedShoes.findIndex((s: any) => s.defId === trueId);
+      if (idx !== -1 && store.equippedShoeIndex !== idx) store.equipShoe(idx);
     }
-  }
 
-  if (targetConfig.ring1) {
-    logger.info("开始穿戴戒指1!");
-    const trueId = getDefId(targetConfig.ring1);
-    logger.info(`目标戒指1ID: ${trueId}`);
+    // 💍 戒指的物理学隔离：记录被戒指1征用的索引，戒指2绝对不去碰它！
+    let usedRingIndex = -1;
+    let isEquipping = false; // 装备状态锁
 
-    const idx = store.ownedRings.findIndex((r: any) => r.defId === trueId);
-    if (idx !== -1) {
-      store.equipRing(idx, 0); // 槽位 1
-      logger.info(`成功穿戴戒指1: ${targetConfig.ring1}`);
-    } else {
-      logger.warn(`戒指1 ${targetConfig.ring1} 未找到或已装备`);
+    // 先统计符合条件的戒指索引
+    const ring1Id = targetConfig.ring1 ? getDefId(targetConfig.ring1) : null;
+    const ring2Id = targetConfig.ring2 ? getDefId(targetConfig.ring2) : null;
+
+    // 统计符合条件的戒指索引
+    const ring1Indices: number[] = [];
+    const ring2Indices: number[] = [];
+    store.ownedRings.forEach((r: any, index: number) => {
+      if (r.defId === ring1Id) ring1Indices.push(index);
+      if (r.defId === ring2Id) ring2Indices.push(index);
+    });
+
+    if (targetConfig.ring1 && !isEquipping) {
+      isEquipping = true;
+      try {
+        const trueId = getDefId(targetConfig.ring1);
+        const idx = store.ownedRings.findIndex((r: any) => r.defId === trueId);
+        if (idx !== -1) {
+          store.equipRing(idx, 0); // 穿到左手
+          usedRingIndex = idx; // 标记这枚戒指已被征用
+        }
+      } catch (error) {
+        logger.error("装备戒指1时发生错误:", error);
+      } finally {
+        isEquipping = false;
+      }
     }
-  }
 
-  if (targetConfig.ring2) {
-    logger.info("开始穿戴戒指2!");
-    const trueId = getDefId(targetConfig.ring2);
-    logger.info(`目标戒指2ID: ${trueId}`);
-
-    const idx = store.ownedRings.findIndex((r: any) => r.defId === trueId);
-    if (idx !== -1) {
-      store.equipRing(idx, 1); // 槽位 2
-      logger.info(`成功穿戴戒指2: ${targetConfig.ring2}`);
-    } else {
-      logger.warn(`戒指2 ${targetConfig.ring2} 未找到或已装备`);
+    if (targetConfig.ring2 && !isEquipping) {
+      isEquipping = true;
+      try {
+        const trueId = getDefId(targetConfig.ring2);
+        // 🌟 核心防坑：查找时，强行跳过已经被戒指1占用的那个索引
+        // 如果戒指1和戒指2是同一种，且玩家只有一枚，那么允许使用同一枚戒指
+        const idx = store.ownedRings.findIndex((r: any, i: number) => {
+          if (r.defId === trueId) {
+            // 如果戒指1和戒指2是同一种，且玩家只有一枚，那么允许使用同一枚戒指
+            if (ring1Id === ring2Id && ring1Indices.length === 1) {
+              return true;
+            }
+            // 否则跳过已使用的索引
+            return i !== usedRingIndex;
+          }
+          return false;
+        });
+        if (idx !== -1) {
+          store.equipRing(idx, 1); // 穿到右手
+        }
+      } catch (error) {
+        logger.error("装备戒指2时发生错误:", error);
+      } finally {
+        isEquipping = false;
+      }
     }
-  }
 
-  // 3. 更新状态并弹出 Toast 提示
-  currentEquippedPath = targetPath;
-  showToast(`👗 已自动换装: ${targetConfig.name}`);
-  logger.info(
-    `✨ [虚拟衣柜] 成功为地图 [${targetPath}] 换上 [${targetConfig.name}]！`,
-  );
+    currentEquippedPath = scene.path;
+    showToast(`👗 已自动换装: ${targetConfig.name}`);
+  } catch (error) {
+    logger.error("❌ 换装执行期间发生异常！游戏底层 API 可能已更改:", error);
+  }
+}
+
+// 💡 顺手导出一个重置函数（稍后在 panel.ts 里点“保存配置”时调用，可以让装备立刻刷新）
+export function resetEquippedPath() {
+  currentEquippedPath = null;
 }

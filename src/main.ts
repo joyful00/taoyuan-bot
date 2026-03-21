@@ -20,6 +20,7 @@ watchRuntime((key, newValue) => {
     // 1. 换装引擎 (内部已自动读取 configStore 里的方案)
     if (configStore.data.settings.autoEquipEnabled) {
       autoEquipByVirtualWardrobe(currentPath);
+      logger.info("✅ 智能换装已启动，当前穿着已更新。");
     } else {
       logger.info("👔 智能换装已关闭，保留当前穿着。");
     }

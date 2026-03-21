@@ -1,42 +1,62 @@
 /* src/ui/panel.css */
+:root {
+  /* 提取自《桃源乡》原版的高级色板 */
+  --ty-bg: rgba(24, 24, 27, 0.95); /* 深色磨砂底色 */
+  --ty-panel: rgba(39, 39, 42, 0.9); /* 组框底色 */
+  --ty-border: rgba(212, 175, 55, 0.25); /* 琥珀金边框 */
+  --ty-accent: #d4af37; /* 高亮琥珀金文字 */
+  --ty-text: #e2e8f0; /* 主文本色 */
+  --ty-muted: #a1a1aa; /* 弱化文本色 */
+  --ty-radius: 4px; /* 匹配游戏原生小圆角 */
+}
 
-/* 悬浮按钮 */
+/* 悬浮唤醒按钮 (小巧精致) */
 .ty-helper-btn {
   position: fixed;
   top: 15%;
   right: 20px;
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background-color: #ffffff;
-  color: #3b82f6;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background-color: var(--ty-panel);
+  border: 1px solid var(--ty-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   cursor: grab;
   z-index: 9998;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 16px;
+  backdrop-filter: blur(4px);
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
+}
+.ty-helper-btn:hover {
+  border-color: var(--ty-accent);
 }
 .ty-helper-btn:active {
   cursor: grabbing;
 }
 
-/* 悬浮面板 (增加尺寸) */
+/* 悬浮面板 (极致瘦身，宽度收缩至 260px) */
 .ty-helper-panel {
   position: fixed;
   top: 15%;
-  right: 80px;
-  width: 380px;
-  height: 600px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  right: 70px;
+  width: 260px; /* 🌟 重点缩小尺寸 */
+  max-height: 500px;
+  background-color: var(--ty-bg);
+  border: 1px solid var(--ty-border);
+  border-radius: var(--ty-radius);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   z-index: 9999;
   display: none;
   flex-direction: column;
-  font-family: sans-serif;
+  font-family: inherit;
+  font-size: 12px; /* 整体字号变小，更精致 */
+  color: var(--ty-text);
+  backdrop-filter: blur(10px); /* 🌟 核心原汁原味：高级毛玻璃效果 */
   overflow: hidden;
 }
 .ty-helper-panel.open {
@@ -48,9 +68,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   cursor: grab;
   user-select: none;
 }
@@ -59,54 +79,62 @@
 }
 .ty-panel-header h3 {
   margin: 0;
-  font-size: 16px;
-  color: #1e293b;
+  font-size: 14px;
+  color: var(--ty-accent);
   pointer-events: none;
+  font-weight: bold;
 }
 .ty-panel-close-btn {
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 14px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--ty-muted);
+  padding: 2px 6px;
 }
 .ty-panel-close-btn:hover {
   color: #ef4444;
 }
 
-/* === 分页选项卡 (Tabs) 样式 === */
+/* 分页选项卡 */
 .ty-tabs {
   display: flex;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--ty-border);
 }
 .ty-tab-btn {
   flex: 1;
-  padding: 10px 0;
+  padding: 8px 0;
   border: none;
   background: none;
-  font-size: 14px;
-  color: #64748b;
+  font-size: 12px;
+  color: var(--ty-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   transition: all 0.2s;
 }
 .ty-tab-btn:hover {
-  color: #3b82f6;
-  background: #f8fafc;
+  color: var(--ty-text);
+  background: rgba(255, 255, 255, 0.05);
 }
 .ty-tab-btn.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
+  color: var(--ty-accent);
+  border-bottom-color: var(--ty-accent);
   font-weight: bold;
 }
 
-/* === 选项卡内容区 === */
+/* 选项卡内容区 */
 .ty-tab-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
-  position: relative;
+  padding: 12px;
+}
+.ty-tab-content::-webkit-scrollbar {
+  width: 4px;
+}
+.ty-tab-content::-webkit-scrollbar-thumb {
+  background: var(--ty-border);
+  border-radius: 4px;
 }
 .ty-tab-pane {
   display: none;
@@ -118,7 +146,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(5px);
+    transform: translateY(2px);
   }
   to {
     opacity: 1;
@@ -126,66 +154,115 @@
   }
 }
 
-/* 装备配置表单样式 */
-.ty-config-group {
-  margin-bottom: 16px;
-  background: #ffffff;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
+/* 状态页空白占位 */
+.ty-status-empty {
+  text-align: center;
+  color: var(--ty-muted);
+  margin-top: 40px;
 }
-.ty-config-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: #334155;
+.ty-status-empty .icon {
+  font-size: 24px;
   margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  opacity: 0.5;
+}
+
+/* 配置表单样式 */
+.ty-config-group {
+  margin-bottom: 12px;
+  background: var(--ty-panel);
+  padding: 10px;
+  border-radius: var(--ty-radius);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.ty-highlight-group {
+  border-color: var(--ty-border);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+.ty-config-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--ty-accent);
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 4px;
 }
 .ty-config-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   justify-content: space-between;
 }
 .ty-config-row label {
-  font-size: 13px;
-  color: #64748b;
-  width: 60px;
+  color: var(--ty-muted);
+  width: 45px;
+  flex-shrink: 0;
 }
-/* 修改输入框和下拉框的文字样式 */
+.ty-checkbox-row {
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.ty-checkbox-row label {
+  width: auto;
+  color: var(--ty-text);
+  cursor: pointer;
+}
+
+/* 输入框和下拉框深度美化 */
 .ty-config-row select,
-.ty-config-row input {
+.ty-config-row input[type="text"] {
   flex: 1;
-  padding: 4px 8px;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
+  padding: 4px 6px;
   outline: none;
-  font-size: 13px;
-
-  color: #0f172a; /* 改为极深的灰黑色，对比度拉满 */
-  font-weight: 600; /* 字体加粗，让装备名字更扎实 */
-  background-color: #f8fafc; /* 加一点极浅的底色，区分背景 */
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  color: var(--ty-text);
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: all 0.2s;
 }
-
-/* 顺便把输入框获得焦点时的边框颜色变蓝，提升交互手感 */
+.ty-config-row input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
 .ty-config-row input:focus,
 .ty-config-row select:focus {
-  border-color: #3b82f6;
-  background-color: #ffffff;
+  border-color: var(--ty-accent);
+  background-color: rgba(0, 0, 0, 0.5);
 }
+.ty-config-row select option {
+  background-color: #1e293b;
+  color: #fff;
+}
+
+/* 滑块样式 */
+.ty-slider {
+  flex: 1;
+  margin: 0 8px;
+  accent-color: var(--ty-accent);
+}
+.ty-val-display {
+  width: 16px;
+  text-align: right;
+  color: var(--ty-accent);
+  font-weight: bold;
+}
+
+/* 保存按钮 */
 .ty-save-btn {
   width: 100%;
-  padding: 10px;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid var(--ty-border);
+  background: var(--ty-panel);
+  color: var(--ty-accent);
+  border-radius: var(--ty-radius);
   cursor: pointer;
   font-weight: bold;
-  margin-top: 10px;
+  transition: all 0.2s;
 }
 .ty-save-btn:hover {
-  background: #2563eb;
+  background: var(--ty-accent);
+  color: #000;
 }

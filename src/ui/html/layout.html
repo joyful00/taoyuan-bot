@@ -1,22 +1,4 @@
-<div class="ty-helper-btn">
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-  >
-    <rect width="18" height="10" x="3" y="11" rx="2" />
-    <circle cx="12" cy="5" r="2" />
-    <path d="M12 7v4" />
-    <line x1="8" x2="8" y1="16" y2="16" />
-    <line x1="16" x2="16" y1="16" y2="16" />
-  </svg>
-</div>
+<div class="ty-helper-btn">🍑</div>
 
 <div class="ty-helper-panel">
   <div class="ty-panel-header">
@@ -25,14 +7,20 @@
   </div>
 
   <div class="ty-tabs">
-    <button class="ty-tab-btn active" data-target="pane-equip">
-      👔 装备方案
-    </button>
-    <button class="ty-tab-btn" data-target="pane-settings">⚙️ 全局设置</button>
+    <button class="ty-tab-btn active" data-target="pane-status">状态</button>
+    <button class="ty-tab-btn" data-target="pane-equip">换装</button>
+    <button class="ty-tab-btn" data-target="pane-settings">设置</button>
   </div>
 
   <div class="ty-tab-content">
-    <div id="pane-equip" class="ty-tab-pane active"></div>
+    <div id="pane-status" class="ty-tab-pane active">
+      <div class="ty-status-empty">
+        <div class="icon">📡</div>
+        <p>系统状态监控模块<br />（等待载入）</p>
+      </div>
+    </div>
+
+    <div id="pane-equip" class="ty-tab-pane"></div>
     <div id="pane-settings" class="ty-tab-pane"></div>
   </div>
 </div>
