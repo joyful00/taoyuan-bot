@@ -1,3 +1,4 @@
+import { setupAutoPauseService } from "./timeControl";
 import doFarmWork from "./farm";
 import doShopWork from "./shop";
 import doVillageWork from "./village";
@@ -10,6 +11,7 @@ import { configStore } from "./store/config"; // 引入配置中心
 import { logger } from "./utils/logger";
 import { initPanel } from "./ui/panel";
 import { setupAlmanacObserver } from "./almanac";
+
 // ==========================================
 // 1. 响应式调度中心 (只负责对状态变化做出反应)
 // ==========================================
@@ -39,7 +41,7 @@ watchRuntime((key, newValue) => {
       } else if (currentPath.includes("/fishing")) {
         // 读取本地设置，判断玩家是否开启了自动钓鱼
         if (configStore.data.settings.autoFishEnabled) {
-          logger.success("🎣 检测到进入钓鱼场，自动钓鱼模块启动！");
+          logger.info("🎣 检测到进入钓鱼场，自动钓鱼模块启动！");
           setupAutoFishing();
         } else {
           logger.info("🎣 进入钓鱼场，已读取到设置：自动钓鱼处于关闭状态。");
@@ -92,13 +94,20 @@ function hijackGameRouter() {
 // 3. 插件主入口
 // ==========================================
 function main() {
-  logger.success("桃源助手启动！当前时间：" + new Date().toLocaleString());
-
+  //  启动自动暂停服务
+  // setupAutoPauseService();
+  console.log(
+      "%c 桃源助手 %c 注入成功 %c v1.0.0 ",
+      "color: #fff; background: #10b981; padding: 2px 4px; border-radius: 3px 0 0 3px; font-weight: bold;",
+      "color: #fff; background: #444; padding: 2px 4px; font-weight: bold;",
+      "color: #10b981; background: #eee; padding: 2px 4px; border-radius: 0 3px 3px 0; font-weight: bold;"
+    );
   // 挂载 UI 可视化控制台
   initPanel();
   // 🌟 启动老黄历观测局
   setupAlmanacObserver();
-
+  // 启动自动暂停服务
+  setupAutoPauseService();
   // 启动路由拦截引擎
   hijackGameRouter();
 }

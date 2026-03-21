@@ -158,7 +158,7 @@ function renderAlmanacUI() {
     const rect = weatherSpan.getBoundingClientRect();
     if (rect.width > 0) {
       container.style.display = "inline-flex";
-      container.style.left = `${rect.right + window.scrollX + 24}px`; // 紧贴右侧 10px，加上滚动偏移
+      container.style.left = `${rect.right + window.scrollX + 10}px`; // 紧贴右侧 10px，加上滚动偏移
       container.style.top = `${rect.top + window.scrollY + rect.height / 2}px`; // 加上滚动偏移
       container.style.transform = `translateY(-50%)`; // 完美垂直居中
     } else {

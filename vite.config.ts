@@ -8,7 +8,7 @@ export default defineConfig({
       userscript: {
         name: "《桃源乡》游戏助手 Pro",
         namespace: "http://tampermonkey.net/",
-        version: "0.2.0",
+        version: "0.3.1",
         description: "上班摸鱼必备的《桃源乡》终极外挂！",
         match: ["https://taoyuan.wenzi.games/*"], // 核心：限制脚本只在游戏页面运行
         author: "Joyful",

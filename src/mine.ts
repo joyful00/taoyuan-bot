@@ -182,7 +182,7 @@ function setupXRayRadar() {
 
       // 面板打开，且引擎未运行，且总开关处于开启状态
       if (gridDiv && !isMining && configStore.data.settings.xrayEnabled) {
-        logger.success("👁️ 进入矿洞层！上帝之眼启动！");
+        logger.info("👁️ 进入矿洞层！上帝之眼启动！");
         isMining = true;
         renderXRay(); // 立即渲染一次
 

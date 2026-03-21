@@ -1,29 +1,12 @@
-// src/utils/logger.ts
+import { createConsola } from "consola";
 
-const IS_DEBUG = true;
+// 🌟 获取 Vite 原生生产环境标识
+export const isProd = import.meta.env.PROD;
 
-export const logger = {
-  info: (msg: string, ...args: any[]) => {
-    if (!IS_DEBUG) return;
-    console.log(`%c[桃源助手] ${msg}`, "color: #3b82f6;", ...args);
+export const logger = createConsola({
+  // 生产环境 = 2 (仅 Warn/Error)，开发环境 = 5 (全开)
+  level: isProd ? 2 : 5,
+  defaults: {
+    tag: "桃源助手",
   },
-
-  success: (msg: string, ...args: any[]) => {
-    if (!IS_DEBUG) return;
-    console.log(
-      `%c[桃源助手] ✨ ${msg}`,
-      "color: #10b981; font-weight: bold;",
-      ...args
-    );
-  },
-
-  warn: (msg: string, ...args: any[]) => {
-    if (!IS_DEBUG) return;
-    console.warn(`[桃源助手] ⚠️ ${msg}`, ...args);
-  },
-
-  error: (msg: string, ...args: any[]) => {
-    // Error 级别通常保留，哪怕是生产环境也需要知道哪里崩了
-    console.error(`[桃源助手] ❌ ${msg}`, ...args);
-  },
-};
+});

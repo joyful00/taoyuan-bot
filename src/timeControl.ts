@@ -1,70 +1,121 @@
 // src/modules/timeControl.ts
 import { configStore } from "./store/config";
+import { logger } from "./utils/logger";
 
-function getGameStore(): any {
-  const vueApp =
-    (document.querySelector("#app") as any)?.__vue_app__ ||
-    (document.body as any).__vue_app__;
-  if (!vueApp) return null;
-  const symbols = Object.getOwnPropertySymbols(vueApp._context.provides);
-  for (const sym of symbols) {
-    const inst = vueApp._context.provides[sym];
-    if (inst?._s instanceof Map) return inst._s.get("game");
-  }
-  return null;
+let spoofPulseTimer: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * 🌟 开启高频欺骗脉冲：持续压制游戏的恢复机制
+ */
+function startSpoofPulse() {
+  if (spoofPulseTimer) return;
+
+  // 1. 永久遮蔽 hidden 属性（在暂停期间，永远告诉游戏我们在后台）
+  Object.defineProperty(document, 'hidden', {
+    configurable: true,
+    get: () => true
+  });
+
+  // 2. 启动高频脉冲，频率 (50ms) 必须高于游戏的 TICK_MS (200ms)
+  // 这样就算玩家点击触发了 resumeClock，在下一次 tick 到来前，也会被我们重新按死！
+  spoofPulseTimer = setInterval(() => {
+    document.dispatchEvent(new Event('visibilitychange'));
+  }, 50);
+  
+  logger.info("🛑 开启高频切后台伪装脉冲，时间线已被强行压制！");
 }
 
-// 在天气右侧（黄历左侧）渲染指示器
-function renderPauseIndicator() {
+/**
+ * 恢复真实状态
+ */
+function stopSpoofPulse() {
+  if (!spoofPulseTimer) return;
+
+  // 1. 停止高频脉冲
+  clearInterval(spoofPulseTimer);
+  spoofPulseTimer = null;
+
+  // 2. 归还 document.hidden 的原生控制权
+  delete (document as any).hidden;
+
+  // 3. 补发一次真实的可见性事件，唤醒游戏的 resume 逻辑
+  document.dispatchEvent(new Event('visibilitychange'));
+  
+  logger.info("▶️ 伪装脉冲解除，时间恢复流动。");
+}
+
+// ---------------- UI 与 循环挂载 (极简通用图标版) ----------------
+
+function renderPauseIndicator(isPaused: boolean) {
   let el = document.getElementById("ty-pause-marker");
-  if (!configStore.data.settings.autoPauseEnabled) {
-    el?.remove();
+  
+  // 如果没开自动暂停，或者当前没有暂停，隐藏 UI
+  if (!configStore.data.settings.autoPauseEnabled || !isPaused) {
+    if (el) el.style.display = "none";
     return;
   }
 
-  const anchor = Array.from(
-    document.querySelectorAll("span.text-accent.font-bold"),
-  ).find(
-    (s) =>
-      s.textContent?.includes("桃源乡") && s.getBoundingClientRect().width > 0,
-  );
-
-  if (!anchor || !anchor.parentElement) return;
-  const weatherEl = Array.from(anchor.parentElement.children).find((c) =>
-    ["晴", "雨", "雷", "雪", "风", "绿"].some((w) =>
-      c.textContent?.includes(w),
-    ),
-  );
-
-  if (!weatherEl) return;
+  // 初始化 UI
   if (!el) {
     el = document.createElement("div");
     el.id = "ty-pause-marker";
-    el.innerHTML = "⏸️";
-    el.style.cssText = `position:fixed;pointer-events:none;z-index:9999;font-size:12px;opacity:0.8;filter:drop-shadow(0 0 2px rgba(0,0,0,0.5));`;
+    
+    // ✨ 极其简洁明了的“圆圈暂停”图标 (完美契合现代 UI 审美)
+    el.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #10b981;">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="10" y1="15" x2="10" y2="9"></line>
+        <line x1="14" y1="15" x2="14" y2="9"></line>
+      </svg>
+    `;
+    
+    // 🎨 样式设置：精美的半透明小圆点
+    el.style.cssText = `
+      position: fixed; 
+      top: 25px; /* 避开黄历 */
+      right: 10px; /* 放右上角 */
+      transform: translateX(-50%); 
+      pointer-events: none; 
+      z-index: 9998; 
+      
+      /* Flex 居中布局 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      /* 外观 */
+      background: rgba(0, 0, 0, 0.65); 
+      width: 30px; 
+      height: 30px;
+      border-radius: 50%; 
+      
+      /* 质感 */
+      backdrop-filter: blur(2px); 
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    `;
     document.body.appendChild(el);
   }
-
-  const rect = weatherEl.getBoundingClientRect();
-  el.style.left = `${rect.right + 6}px`; // 天气右侧 6px，黄历在 24px
-  el.style.top = `${rect.top + rect.height / 2}px`;
-  el.style.transform = `translateY(-50%)`;
+  
+  // 🌟 核心细节：显示时必须用 flex，否则 SVG 无法完美居中
+  el.style.display = "flex"; 
 }
 
 export function setupAutoPauseService() {
-  setInterval(() => {
-    try {
-      renderPauseIndicator();
-      if (!configStore.data.settings.autoPauseEnabled) return;
+  logger.info("⏰ 自动暂停 [高频压制版] 已挂载，接管原生离线保护...");
 
-      const store = getGameStore();
-      // 🌟 核心逻辑：操作时游戏会将 isPaused 设为 false。
-      // 操作结束（或我们每秒轮询时），只要它是 false，就强行把它掰回 true（暂停）。
-      if (store && store.isPaused === false) {
-        store.isPaused = true;
-      }
-    } catch (error) {
-      console.warn("自动暂停服务异常:", error);
+  // 业务判定循环 (每秒检查一次是否该开启脉冲)
+  setInterval(() => {
+    const shouldPause = configStore.data.settings.autoPauseEnabled; 
+
+    if (shouldPause && !spoofPulseTimer) {
+      startSpoofPulse();
+      renderPauseIndicator(true);
+    } 
+    else if (!shouldPause && spoofPulseTimer) {
+      stopSpoofPulse();
+      renderPauseIndicator(false);
     }
-  }, 1000);
+
+  }, 1000); 
 }

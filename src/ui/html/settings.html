@@ -2,20 +2,20 @@
   <div class="ty-config-title">⏰ 时间管理</div>
   <div class="ty-config-row ty-checkbox-row">
     <input type="checkbox" id="switch-autopause" />
-    <label for="switch-autopause">开启自动暂停 (操作完即停)</label>
+    <label for="switch-autopause">游戏时间自动暂停</label>
   </div>
 </div>
 <div class="ty-config-group">
   <div class="ty-config-title">👔 换装引擎</div>
   <div class="ty-config-row ty-checkbox-row">
     <input type="checkbox" id="switch-autoequip" checked />
-    <label for="switch-autoequip">开启场景智能换装</label>
+    <label for="switch-autoequip">游戏场景智能换装</label>
   </div>
 
   <div class="ty-config-title" style="margin-top: 12px">👁️ 矿洞辅助</div>
   <div class="ty-config-row ty-checkbox-row">
     <input type="checkbox" id="switch-xray" checked />
-    <label for="switch-xray">开启全图透视雷达</label>
+    <label for="switch-xray">矿洞全图透视雷达</label>
   </div>
 </div>
 
@@ -23,35 +23,23 @@
   <div class="ty-config-title">🎣 钓鱼引擎</div>
   <div class="ty-config-row ty-checkbox-row" style="margin-bottom: 12px">
     <input type="checkbox" id="switch-autofish" checked />
-    <label for="switch-autofish">开启 60FPS 自动钓鱼</label>
+    <label for="switch-autofish">游戏自动钓鱼</label>
   </div>
 
-  <div class="ty-config-row">
-    <label>收线力度</label>
-    <input
-      type="range"
-      id="slider-tension"
-      min="1"
-      max="10"
-      value="5"
-      class="ty-slider"
-    />
-    <span id="val-tension" class="ty-val-display">5</span>
+  <div class="ty-config-row column-style">
+    <div class="ty-row-header">
+      <label>收线力度</label>
+      <span id="val-tension" class="ty-val-display">5</span>
+    </div>
+    <input type="range" id="slider-tension" min="1" max="10" value="5" class="ty-slider" />
   </div>
-  <div
-    class="ty-config-row"
-    title="滑块与目标之间的允许误差距离，值越大越不容易脱钩，但可能导致过度抖动"
-  >
-    <label>判定容错</label>
-    <input
-      type="range"
-      id="slider-tolerance"
-      min="1"
-      max="20"
-      value="10"
-      class="ty-slider"
-    />
-    <span id="val-tolerance" class="ty-val-display">10</span>
+  
+  <div class="ty-config-row column-style" title="滑块与目标之间的允许误差距离，值越大越不容易脱钩，但可能导致过度抖动">
+    <div class="ty-row-header">
+      <label>判定容错 <small style="opacity: 0.7; font-weight: normal;">(允许误差距离)</small></label>
+      <span id="val-tolerance" class="ty-val-display">10</span>
+    </div>
+    <input type="range" id="slider-tolerance" min="1" max="20" value="10" class="ty-slider" />
   </div>
 </div>
 

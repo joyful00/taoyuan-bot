@@ -266,3 +266,53 @@
   background: var(--ty-accent);
   color: #000;
 }
+/* 修改外层容器为垂直排列 (Flex Column) */
+.ty-config-row.column-style {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  /* 增加每个配置项之间的间距，避免拥挤 */
+  width: 100%;
+}
+
+/* 第一行：标题和数值两端对齐 */
+.ty-row-header {
+  display: flex;
+  justify-content: space-between;
+  /* 魔法属性：标题在最左，数值在最右 */
+  align-items: center;
+  width: 100%;
+  margin-bottom: 8px;
+  /* 给下方滑块留出呼吸空间 */
+}
+
+/* 标签文字样式微调 */
+.ty-row-header label {
+  flex: 1;
+  /* 🌟 关键：让文字标签占据所有剩余空间，把右边的数值狠狠推过去 */
+  text-align: left;
+  /* 🌟 强制靠左对齐 */
+  white-space: nowrap;
+  /* 🌟 强制不换行，防止宽度不够时字被挤到第二层重叠 */
+  font-size: 13px;
+  font-weight: bold;
+  color: #e2e8f0;
+}
+
+/* 数值显示高亮 */
+.ty-val-display {
+  flex-shrink: 0;
+  /* 🌟 防止数值标签在空间小的时候被挤压变形 */
+  font-size: 13px;
+  font-family: monospace;
+  color: #10b981;
+  padding: 2px 8px 2px 6px;
+  border-radius: 4px;
+}
+
+/* 让滑块强行占满整行 */
+.ty-slider {
+  width: 100%;
+  margin: 0;
+  cursor: pointer;
+}
