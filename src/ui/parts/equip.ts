@@ -5,7 +5,6 @@ import {
   SCENE_LIST,
   resetEquippedPath,
 } from "../../autoEquip";
-import { logger } from "../../utils/logger";
 
 export function initEquipTab(container: HTMLElement) {
   // === 1. DOM 元素获取 ===

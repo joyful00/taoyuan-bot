@@ -20,7 +20,7 @@ function startSpoofPulse() {
   // 这样就算玩家点击触发了 resumeClock，在下一次 tick 到来前，也会被我们重新按死！
   spoofPulseTimer = setInterval(() => {
     document.dispatchEvent(new Event('visibilitychange'));
-  }, 50);
+  }, 150);
   
   logger.info("🛑 开启高频切后台伪装脉冲，时间线已被强行压制！");
 }

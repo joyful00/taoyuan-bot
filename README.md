@@ -11,7 +11,8 @@
 [![原版游戏](https://img.shields.io/badge/原版游戏-Taoyuan-FF1493.svg?style=for-the-badge&logo=github)](https://github.com/setube/taoyuan)
 
 **让修仙更优雅，让摸鱼更纯粹。**
-[📦 立即安装](https://github.com/joyful00/taoyuan-bot) | [💬 提交反馈](https://github.com/joyful00/taoyuan-bot/issues) | [📖 开源地址](https://github.com/joyful00/taoyuan-bot)
+
+[📦 立即安装](https://scriptcat.org/zh-CN/script-show-page/5627) | [💬 提交反馈](https://github.com/joyful00/taoyuan-bot/issues) | [📖 开源地址](https://github.com/joyful00/taoyuan-bot)
 
 ---
 
