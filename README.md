@@ -2,7 +2,7 @@
 
 🔗 **项目开源地址：** [https://github.com/joyful00/taoyuan-bot](https://github.com/joyful00/taoyuan-bot)
 
-[![版本](https://img.shields.io/badge/版本-0.3.1-blue.svg)]()
+![Version](https://img.shields.io/github/package-json/v/joyful00/taoyuan-bot?style=flat-square&color=blue&label=Version)
 
 [![平台](https://img.shields.io/badge/平台-ScriptCat%20%7C%20Tampermonkey-orange.svg)]()
 

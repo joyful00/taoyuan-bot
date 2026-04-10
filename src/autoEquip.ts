@@ -169,69 +169,41 @@ export function autoEquipByVirtualWardrobe(currentPath: string) {
       if (idx !== -1 && store.equippedShoeIndex !== idx) store.equipShoe(idx);
     }
 
-    // 💍 戒指的物理学隔离：记录被戒指1征用的索引，戒指2绝对不去碰它！
-    let usedRingIndex = -1;
-    let isEquipping = false; // 装备状态锁
-
-    // 先统计符合条件的戒指索引
+    // 💍 极简且完美的戒指换装逻辑
     const ring1Id = targetConfig.ring1 ? getDefId(targetConfig.ring1) : null;
     const ring2Id = targetConfig.ring2 ? getDefId(targetConfig.ring2) : null;
 
-    // 统计符合条件的戒指索引
-    const ring1Indices: number[] = [];
-    const ring2Indices: number[] = [];
-    store.ownedRings.forEach((r: any, index: number) => {
-      if (r.defId === ring1Id) ring1Indices.push(index);
-      if (r.defId === ring2Id) ring2Indices.push(index);
-    });
-
-    if (targetConfig.ring1 && !isEquipping) {
-      isEquipping = true;
-      try {
-        const trueId = getDefId(targetConfig.ring1);
-        const idx = store.ownedRings.findIndex((r: any) => r.defId === trueId);
-        if (idx !== -1) {
-          store.equipRing(idx, 0); // 穿到左手
-          usedRingIndex = idx; // 标记这枚戒指已被征用
-        }
-      } catch (error) {
-        logger.error("装备戒指1时发生错误:", error);
-      } finally {
-        isEquipping = false;
+    // 处理一号槽位 (左手)
+    if (ring1Id) {
+      const idx = store.ownedRings.findIndex((r: any) => r.defId === ring1Id);
+      // 如果找到了，且当前左手没装备这枚戒指，则装备
+      if (idx !== -1 && store.equippedRingSlot1 !== idx) {
+        store.equipRing(idx, 0); 
       }
+    } else {
+      store.unequipRing(0); // 如果配置没写戒指1，脱掉左手
     }
 
-    if (targetConfig.ring2 && !isEquipping) {
-      isEquipping = true;
-      try {
-        const trueId = getDefId(targetConfig.ring2);
-        // 🌟 核心防坑：查找时，强行跳过已经被戒指1占用的那个索引
-        // 如果戒指1和戒指2是同一种，且玩家只有一枚，那么允许使用同一枚戒指
-        const idx = store.ownedRings.findIndex((r: any, i: number) => {
-          if (r.defId === trueId) {
-            // 如果戒指1和戒指2是同一种，且玩家只有一枚，那么允许使用同一枚戒指
-            if (ring1Id === ring2Id && ring1Indices.length === 1) {
-              return true;
-            }
-            // 否则跳过已使用的索引
-            return i !== usedRingIndex;
-          }
-          return false;
-        });
-        if (idx !== -1) {
-          store.equipRing(idx, 1); // 穿到右手
+    // 处理二号槽位 (右手)
+    if (ring2Id) {
+      // 🌟 核心防坑：游戏明文禁止左右手装备同名戒指！
+      if (ring1Id === ring2Id) {
+        logger.warn(`⚠️ 游戏规则限制：禁止同时装备两枚 [${targetConfig.ring2}]，已跳过二号槽位。`);
+      } else {
+        const idx = store.ownedRings.findIndex((r: any) => r.defId === ring2Id);
+        // 如果找到了，且当前右手没装备这枚戒指，则装备
+        if (idx !== -1 && store.equippedRingSlot2 !== idx) {
+          store.equipRing(idx, 1); 
         }
-      } catch (error) {
-        logger.error("装备戒指2时发生错误:", error);
-      } finally {
-        isEquipping = false;
       }
+    } else {
+      store.unequipRing(1); // 如果配置没写戒指2，脱掉右手
     }
 
     currentEquippedPath = scene.path;
     showToast(`👗 已自动换装: ${targetConfig.name}`);
   } catch (error) {
-    logger.error("❌ 换装执行期间发生异常！游戏底层 API 可能已更改:", error);
+    logger.error("❌ 换装执行期间发生异常！", error);
   }
 }
 

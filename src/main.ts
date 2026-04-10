@@ -97,11 +97,11 @@ function main() {
   //  启动自动暂停服务
   // setupAutoPauseService();
   console.log(
-      "%c 桃源助手 %c 注入成功 %c v1.0.0 ",
-      "color: #fff; background: #10b981; padding: 2px 4px; border-radius: 3px 0 0 3px; font-weight: bold;",
-      "color: #fff; background: #444; padding: 2px 4px; font-weight: bold;",
-      "color: #10b981; background: #eee; padding: 2px 4px; border-radius: 0 3px 3px 0; font-weight: bold;"
-    );
+    `%c 桃源助手 %c 注入成功 %c v${__APP_VERSION__} `,
+    "color: #fff; background: #10b981; padding: 2px 4px; border-radius: 3px 0 0 3px; font-weight: bold;",
+    "color: #fff; background: #444; padding: 2px 4px; font-weight: bold;",
+    "color: #10b981; background: #eee; padding: 2px 4px; border-radius: 0 3px 3px 0; font-weight: bold;",
+  );
   // 挂载 UI 可视化控制台
   initPanel();
   // 🌟 启动老黄历观测局

@@ -51,7 +51,9 @@ export function initEquipTab(container: HTMLElement) {
       } else {
         // 模式 B: 背包已就绪 -> 渲染真实拥有的装备列表
         html = `<option value="">-- 脱下/不穿 --</option>`;
-        const items = (inv as any)[key + "s"] || [];
+        // 🌟 核心修复：智能解析 key，防止 ring1 变成 ring1s
+        const invKey = key.startsWith("ring") ? "rings" : key + "s";
+        const items = (inv as any)[invKey] || [];
         const uniqueItems = Array.from(new Set(items)) as string[];
 
         // 确保即使装备在仓库里，也能显示在选项中防止保存时丢失

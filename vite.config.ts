@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import monkey from "vite-plugin-monkey";
-
+import pkg from "./package.json";
 export default defineConfig({
   plugins: [
     monkey({
@@ -8,7 +8,7 @@ export default defineConfig({
       userscript: {
         name: "《桃源乡》游戏助手 Pro",
         namespace: "http://tampermonkey.net/",
-        version: "0.3.1",
+        version: pkg.version,
         description: "上班摸鱼必备的《桃源乡》终极外挂！",
         match: ["https://taoyuan.wenzi.games/*"], // 核心：限制脚本只在游戏页面运行
         author: "Joyful",
@@ -18,4 +18,7 @@ export default defineConfig({
       },
     }),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
 });

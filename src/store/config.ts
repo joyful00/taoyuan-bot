@@ -26,21 +26,11 @@ const defaultConfig = {
       ring2: "持久指环",
       shoe: "疾风靴",
     },
-    preset_2: {
-      id: "preset_2",
-      name: "🎣 默认钓鱼套",
-      hat: "渔夫帽",
-      weapon: "竹杖",
-      ring1: "渔翁碧环",
-      ring2: "渔获碧环",
-      shoe: "钓鱼靴",
-    },
   } as Record<string, EquipPreset>, // 👈 关键就是这行 as 声明！
 
   // 场景映射表
   sceneMappings: {
     "/game/farm": "preset_1",
-    "/game/fishing": "preset_2",
   } as Record<string, string>,
 
   settings: {
