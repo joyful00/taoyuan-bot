@@ -10,19 +10,32 @@ let spoofPulseTimer: ReturnType<typeof setInterval> | null = null;
 function startSpoofPulse() {
   if (spoofPulseTimer) return;
 
-  // 1. 永久遮蔽 hidden 属性（在暂停期间，永远告诉游戏我们在后台）
-  Object.defineProperty(document, 'hidden', {
-    configurable: true,
-    get: () => true
-  });
+  // 🌟 究极防弹版：同时劫持 hidden 和 visibilityState，并加上 try-catch 防止被浏览器静默拦截
+  try {
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      get: () => true
+    });
+    
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => 'hidden' // 强行骗游戏说当前处于隐藏状态
+    });
+    logger.info("🎭 成功覆盖 Document 可见性属性");
+  } catch (error) {
+    logger.error("❌ 覆盖 Document 属性失败，Opera 可能锁死了该属性:", error);
+  }
 
-  // 2. 启动高频脉冲，频率 (50ms) 必须高于游戏的 TICK_MS (200ms)
-  // 这样就算玩家点击触发了 resumeClock，在下一次 tick 到来前，也会被我们重新按死！
-  spoofPulseTimer = setInterval(() => {
-    document.dispatchEvent(new Event('visibilitychange'));
-  }, 150);
-  
-  logger.info("🛑 开启高频切后台伪装脉冲，时间线已被强行压制！");
+  setTimeout(() => {
+    if (!configStore.data.settings.autoPauseEnabled) return;
+    
+    spoofPulseTimer = setInterval(() => {
+      // 派发事件，让 Vue 重新读取我们伪造的属性
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, 150); 
+  }, 100);
+
+  logger.success("🛑 自动暂停已开启");
 }
 
 /**
